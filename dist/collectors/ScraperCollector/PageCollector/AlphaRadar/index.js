@@ -1,75 +1,92 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scrape = void 0;
+const promises_1 = require("fs/promises");
 const url = 'https://alpharadar.io/twitter';
-async function extractProjects(page) {
-    // 等待表格加载
-    await page.waitForSelector('table tbody tr', { timeout: 30000 });
-    // 提取所有项目数据
-    const projects = await page.evaluate(() => {
-        const rows = document.querySelectorAll('table tbody tr');
-        const data = [];
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 4) {
-                const nameCell = cells[0];
-                const nameText = nameCell.textContent?.trim() || '';
-                const nameParts = nameText.split('\n').map(s => s.trim()).filter(s => s);
-                const projectName = nameParts[0] || '';
-                const twitterHandle = nameParts[1] || '';
-                // 提取 Twitter 链接
-                const twitterLink = nameCell.querySelector('a[href*="x.com"], a[href*="twitter.com"]');
-                const twitterUrl = twitterLink?.getAttribute('href') || `https://x.com/${twitterHandle.replace('@', '')}`;
-                data.push({
-                    name: projectName,
-                    twitterHandle: twitterHandle,
-                    twitterUrl: twitterUrl,
-                    time: cells[1]?.textContent?.trim() || '',
-                    score: cells[2]?.textContent?.trim() || '',
-                    followers: cells[3]?.textContent?.trim() || '',
-                    status: cells[4]?.textContent?.trim() || '',
-                    type: cells[5]?.textContent?.trim() || '',
-                    category: cells[6]?.textContent?.trim() || '',
-                });
-            }
-        });
-        return data;
+async function extractProjectsFromDom(page) {
+    return page.evaluate(() => {
+        const txt = (el) => (el?.textContent || '').trim();
+        const clean = (s) => s.replace(/\s+/g, ' ').trim();
+        const items = [];
+        const seen = new Set();
+        const rows = Array.from(document.querySelectorAll('.ant-table-row'));
+        for (const row of rows) {
+            const cells = row.querySelectorAll('.ant-table-cell');
+            if (cells.length < 7)
+                continue;
+            const firstCell = cells[0];
+            const rawLines = txt(firstCell).split(/\n+/).map(clean).filter(Boolean);
+            const twitterLink = firstCell.querySelector('a[href*="twitter.com"], a[href*="x.com"]');
+            const twitterUrl = twitterLink?.href || '';
+            const twitterHandle = rawLines.find(v => v.startsWith('@')) || '';
+            const projectName = rawLines.find(v => !v.startsWith('@') && v !== 'Details' && v !== 'Action') || '';
+            const key = `${projectName}|${twitterHandle}`;
+            if (!projectName || seen.has(key))
+                continue;
+            seen.add(key);
+            const categoryCell = cells[7] || cells[6];
+            const categoryText = clean(txt(categoryCell)).replace(/Details\s*Action$/i, '').trim();
+            items.push({
+                name: projectName,
+                twitterHandle,
+                twitterUrl,
+                description: '',
+                time: clean(txt(cells[2] || cells[1])),
+                score: clean(txt(cells[3] || cells[2])),
+                followers: clean(txt(cells[4] || cells[3])),
+                status: clean(txt(cells[5] || cells[4])),
+                type: clean(txt(cells[6] || cells[5])),
+                category: categoryText,
+            });
+        }
+        return items;
     });
-    return projects;
 }
 async function navigateToNextPage(page) {
-    try {
-        const nextBtn = await page.$('button.ant-pagination-next:not([disabled])');
-        if (!nextBtn)
-            return false;
-        await nextBtn.click();
-        await page.waitForTimeout(3000);
-        return true;
+    const selectors = [
+        'button.ant-pagination-next:not([disabled])',
+        '.ant-pagination-next button:not([disabled])',
+        '.ant-pagination-next:not(.ant-pagination-disabled)',
+        'li.ant-pagination-next:not(.ant-pagination-disabled)',
+    ];
+    for (const selector of selectors) {
+        const nextBtn = await page.$(selector);
+        if (nextBtn) {
+            await nextBtn.click().catch(() => { });
+            await page.waitForTimeout(2500);
+            return true;
+        }
     }
-    catch {
-        return false;
-    }
+    return false;
 }
 const scrape = async (page) => {
     await page.goto(url, {
         waitUntil: 'domcontentloaded',
         timeout: 60000,
     });
-    await page.waitForTimeout(5000);
-    // 采集所有分页数据
+    await page.waitForTimeout(8000);
+    const title = await page.title().catch(() => '');
+    const content = await page.content();
+    await page.screenshot({ path: '/tmp/alpharesearch-debug.png', fullPage: true }).catch(() => { });
+    await (0, promises_1.writeFile)('/tmp/alpharesearch-debug.html', content, 'utf8').catch(() => { });
+    console.log('[alpharadar] title:', title);
+    console.log('[alpharadar] has table:', content.includes('table'));
+    console.log('[alpharadar] has Members can view full data:', content.includes('Members can view full data'));
+    console.log('[alpharadar] has Wallet Connection:', content.includes('Wallet Connection'));
+    console.log('[alpharadar] has Connect Wallet:', content.includes('Connect Wallet'));
     const allProjects = [];
     const seen = new Set();
     for (let pageNum = 1; pageNum <= 50; pageNum++) {
         console.log(`[*] 采集第 ${pageNum} 页...`);
-        const projects = await extractProjects(page);
+        const projects = await extractProjectsFromDom(page);
+        console.log(`[alpharadar] dom extracted ${projects.length} candidates`);
         for (const project of projects) {
             const key = `${project.name}_${project.twitterHandle}`;
-            if (!seen.has(key) && project.name) {
+            if (!seen.has(key)) {
                 seen.add(key);
                 allProjects.push(project);
             }
         }
-        // 尝试翻页
         const hasNext = await navigateToNextPage(page);
         if (!hasNext)
             break;
@@ -78,7 +95,7 @@ const scrape = async (page) => {
     await page.close();
     return {
         htmlContent: JSON.stringify(allProjects, null, 2),
-        projects: allProjects
+        projects: allProjects,
     };
 };
 exports.scrape = scrape;
