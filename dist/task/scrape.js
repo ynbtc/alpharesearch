@@ -15,8 +15,10 @@ async function run() {
             clearTimeout(timer);
             await registry.stopAll();
             const reportData = registry.exportMetricsValue();
-            // 输出 JSON 到 stdout，便于通过管道传递给其他命令
-            console.log(JSON.stringify(reportData, null, 2));
+            const payload = {
+                scrape: reportData,
+            };
+            console.log(JSON.stringify(payload, null, 2));
         }, 1000);
     }
     else {

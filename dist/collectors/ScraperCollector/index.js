@@ -8,7 +8,6 @@ const playwright_1 = require("playwright");
 const path_1 = require("path");
 const AbstractCollector_1 = __importDefault(require("../AbstractCollector"));
 const config_1 = require("../../config");
-const MetricsRegistry_1 = require("../../registry/MetricsRegistry");
 const log_1 = require("../../utils/log");
 const unzipExtension_1 = require("../../lib/unzipExtension");
 const unlockWallet_1 = require("./unlockWallet");
@@ -17,8 +16,8 @@ const report_1 = require("../../utils/report");
 class ScraperCollector extends AbstractCollector_1.default {
     extension;
     headless;
-    registry = new MetricsRegistry_1.MetricsRegistry();
     browser = null;
+    htmlContent = "";
     collectedProjects = [];
     constructor(extension, headless) {
         super();
@@ -46,7 +45,7 @@ class ScraperCollector extends AbstractCollector_1.default {
         if (this.headless) {
             options.recordVideo = {
                 dir: config_1.REPORT_PATH,
-                size: config_1.VIDEO_SIZE
+                size: config_1.VIDEO_SIZE,
             };
         }
         const browser = await playwright_1.chromium.launchPersistentContext(config_1.USER_DATA_PATH, options);
@@ -55,46 +54,30 @@ class ScraperCollector extends AbstractCollector_1.default {
             await page.setViewportSize(config_1.VIDEO_SIZE);
         }
         this.browser = browser;
-        // 访问钱包扩展并解锁
         await page.goto(this.extension.home);
         await page.waitForTimeout(5000);
         await (0, unlockWallet_1.unlockWallet)(page);
-        // 采集 AlphaRadar 数据
         (0, log_1.log)("Starting AlphaRadar data collection...");
         const result = await (0, AlphaRadar_1.scrape)(page);
-        // 解析项目数据
-        try {
-            this.collectedProjects = JSON.parse(result.htmlContent);
-            (0, log_1.log)(`Collected ${this.collectedProjects.length} projects from AlphaRadar`);
-        }
-        catch (e) {
-            (0, log_1.log)("Failed to parse collected data");
-            this.collectedProjects = [];
-        }
+        this.htmlContent = result.htmlContent || "";
+        this.collectedProjects = result.projects || [];
+        (0, log_1.log)(`Collected ${this.collectedProjects.length} projects from AlphaRadar`);
         this.setReady(true);
     }
-    /**
-     * 验证项目并生成报告
-     */
     async validateAndGenerateReport() {
         if (this.collectedProjects.length === 0) {
             return "No projects collected";
         }
         (0, log_1.log)("Validating projects with KOL data...");
-        // 验证 KOL 数据
         const validatedProjects = await (0, report_1.validateProjectsWithKOL)(this.collectedProjects);
-        // 生成报告
         const report = (0, report_1.generateReport)(validatedProjects);
-        // 保存报告
-        const reportPath = (0, report_1.saveReport)(report);
-        // 同时输出到控制台
+        (0, report_1.saveReport)(report);
         console.log("\n" + "=".repeat(60));
         console.log(report);
         console.log("=".repeat(60) + "\n");
         return report;
     }
     async stop() {
-        await this.registry.stopAll();
         if (this.browser) {
             await this.browser.close();
             this.browser = null;
@@ -103,11 +86,14 @@ class ScraperCollector extends AbstractCollector_1.default {
     getMetrics() {
         return {
             name: "scraper",
-            value: this.registry.exportMetrics(),
+            value: this.getMetricsValue(),
         };
     }
     getMetricsValue() {
-        return this.registry.exportMetricsValue();
+        return {
+            htmlContent: this.htmlContent,
+            projects: this.collectedProjects,
+        };
     }
     getCollectedProjects() {
         return this.collectedProjects;

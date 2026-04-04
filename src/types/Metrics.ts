@@ -1,4 +1,4 @@
-type BasicValue = object | number | string | boolean;
+type BasicValue = object | number | string | boolean | Array<any>;
 
 export type MetricsValue = BasicValue | Record<string, BasicValue>;
 
@@ -10,4 +10,5 @@ export interface Metrics {
 
 export type ScrapeMetricsValue = {
   htmlContent: string;
+  projects?: Array<any>;
 };

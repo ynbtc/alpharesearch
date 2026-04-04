@@ -21,7 +21,11 @@ async function extractProjectsFromDom(page: Page): Promise<ProjectInfo[]> {
       const rawLines = txt(firstCell).split(/\n+/).map(clean).filter(Boolean);
       const twitterLink = firstCell.querySelector('a[href*="twitter.com"], a[href*="x.com"]') as HTMLAnchorElement | null;
       const twitterUrl = twitterLink?.href || '';
-      const twitterHandle = rawLines.find(v => v.startsWith('@')) || '';
+      let twitterHandle = rawLines.find(v => v.startsWith('@')) || '';
+      if (!twitterHandle && twitterUrl) {
+        const m = twitterUrl.match(/(?:twitter|x)\.com\/([^/?#]+)/i);
+        if (m) twitterHandle = '@' + m[1];
+      }
       const projectName = rawLines.find(v => !v.startsWith('@') && v !== 'Details' && v !== 'Action') || '';
 
       const key = `${projectName}|${twitterHandle}`;
