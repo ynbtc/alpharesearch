@@ -18,28 +18,25 @@ interface ProjectInfo {
 }
 
 async function extractProjects(page: Page): Promise<ProjectInfo[]> {
-  // 等待表格加载
   await page.waitForSelector('table tbody tr', { timeout: 30000 });
-  
-  // 提取所有项目数据
+
   const projects = await page.evaluate(() => {
     const rows = document.querySelectorAll('table tbody tr');
     const data: any[] = [];
-    
+
     rows.forEach(row => {
       const cells = row.querySelectorAll('td');
       if (cells.length >= 4) {
         const nameCell = cells[0];
         const nameText = nameCell.textContent?.trim() || '';
         const nameParts = nameText.split('\n').map(s => s.trim()).filter(s => s);
-        
+
         const projectName = nameParts[0] || '';
         const twitterHandle = nameParts[1] || '';
-        
-        // 提取 Twitter 链接
+
         const twitterLink = nameCell.querySelector('a[href*="x.com"], a[href*="twitter.com"]');
         const twitterUrl = twitterLink?.getAttribute('href') || `https://x.com/${twitterHandle.replace('@', '')}`;
-        
+
         data.push({
           name: projectName,
           twitterHandle: twitterHandle,
@@ -53,10 +50,10 @@ async function extractProjects(page: Page): Promise<ProjectInfo[]> {
         });
       }
     });
-    
+
     return data;
   });
-  
+
   return projects;
 }
 
@@ -64,7 +61,7 @@ async function navigateToNextPage(page: Page): Promise<boolean> {
   try {
     const nextBtn = await page.$('button.ant-pagination-next:not([disabled])');
     if (!nextBtn) return false;
-    
+
     await nextBtn.click();
     await page.waitForTimeout(3000);
     return true;
@@ -79,17 +76,23 @@ export const scrape = async (page: Page): Promise<ScrapeResult> => {
     timeout: 60000,
   });
 
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(8000);
+  await page.screenshot({ path: '/tmp/alpharesearch-debug.png', fullPage: true }).catch(() => {});
 
-  // 采集所有分页数据
+  const content = await page.content();
+  if (!content.includes('table') || !content.includes('tbody')) {
+    console.log('[alpharadar] page content preview:', content.slice(0, 1200));
+    return { htmlContent: content };
+  }
+
   const allProjects: ProjectInfo[] = [];
   const seen = new Set<string>();
-  
+
   for (let pageNum = 1; pageNum <= 50; pageNum++) {
     console.log(`[*] 采集第 ${pageNum} 页...`);
-    
+
     const projects = await extractProjects(page);
-    
+
     for (const project of projects) {
       const key = `${project.name}_${project.twitterHandle}`;
       if (!seen.has(key) && project.name) {
@@ -97,8 +100,7 @@ export const scrape = async (page: Page): Promise<ScrapeResult> => {
         allProjects.push(project);
       }
     }
-    
-    // 尝试翻页
+
     const hasNext = await navigateToNextPage(page);
     if (!hasNext) break;
   }
@@ -107,8 +109,8 @@ export const scrape = async (page: Page): Promise<ScrapeResult> => {
 
   await page.close();
 
-  return { 
+  return {
     htmlContent: JSON.stringify(allProjects, null, 2),
-    projects: allProjects 
+    projects: allProjects,
   };
 };
