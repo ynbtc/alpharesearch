@@ -1,5 +1,0 @@
-2026/03/30-23:31:42.922 f91321 Creating DB /Users/oker/Library/Application Support/Google/Chrome/Profile 4/IndexedDB/chrome-extension_mcohilncbfahbmgdjkbpemcciiolgcge_0.indexeddb.leveldb since it was missing.
-2026/03/30-23:31:42.924 f91321 Reusing MANIFEST /Users/oker/Library/Application Support/Google/Chrome/Profile 4/IndexedDB/chrome-extension_mcohilncbfahbmgdjkbpemcciiolgcge_0.indexeddb.leveldb/MANIFEST-000001
-2026/03/30-23:34:00.841 f91324 Level-0 table #5: started
-2026/03/30-23:34:00.855 f91324 Level-0 table #5: 1032838 bytes OK
-2026/03/30-23:34:00.857 f91324 Delete type=0 #3

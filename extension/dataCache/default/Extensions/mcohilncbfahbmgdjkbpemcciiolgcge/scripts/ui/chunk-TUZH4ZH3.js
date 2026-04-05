@@ -1,2 +1,0 @@
-import{S as c}from"./chunk-G7EMCTN6.js";import{k as s}from"./chunk-IWJPUYZC.js";import{a}from"./chunk-FN4DRDXZ.js";import{p as t}from"./chunk-DRS34UNZ.js";import{I as i}from"./chunk-KKN3NUAM.js";import{n as o,p as n}from"./chunk-FYYT6JKZ.js";o();n();var x="wallet_inner_transfer",l=(p=s)=>{let m=c();return a(async f=>{let e;try{e=(await p(f)).popupInfoList}catch(r){throw i.error(t("wallet_extension_transaction_error_general_check_network")),r}return e?.length&&await m(e),e})},g=l;export{x as a,g as b};
-//# sourceMappingURL=chunk-TUZH4ZH3.js.map

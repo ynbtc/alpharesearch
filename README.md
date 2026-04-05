@@ -1,8 +1,10 @@
+[English](README_EN.md)
+
 # AlphaResearch
 
 基于 Playwright 的 AlphaRadar 早期项目研究工具。自动采集 AlphaRadar 项目数据 → Frontrun.pro API 验证 KOL 关注数 → 生成项目研究报告。
 
-**设计为可被其他 Agent 直接调用的 Skill，支持自动环境初始化。**
+**设计为可被其他 Agent 直接调用的 Skill，支持自动环境初始化，无需人工干预。**
 
 ## 快速开始
 
@@ -28,36 +30,7 @@ npm run skill:report   # 采集并输出格式化报告
 
 ## 作为 Skill 被其他 Agent 调用
 
-### Claude Code MCP 方式
-
-在 Claude Code 配置文件中添加：
-
-```json
-{
-  "mcpServers": {
-    "alpharesearch": {
-      "command": "node",
-      "args": ["dist/mcp.js"],
-      "cwd": "/path/to/alpharesearch",
-      "env": {
-        "FRONTRUN_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-### 命令行管道方式
-
-```bash
-# 输出 JSON 数据，可被其他程序消费
-npm run skill 2>/dev/null
-
-# 管道传递给 Claude Code
-npm run prod:claude
-```
-
-### 其他 Agent 调用
+### 方式一：命令行直接调用
 
 任何 Agent 只需执行以下命令即可完成整个研究流程：
 
@@ -67,6 +40,39 @@ cd /path/to/alpharesearch && npm run setup && npm run skill
 
 `setup` 脚本是幂等的，重复运行不会重复安装。
 
+### 方式二：Claude Code MCP
+
+在 Claude Code 配置文件中添加：
+
+```json
+{
+  "mcpServers": {
+    "alpharesearch": {
+      "command": "node",
+      "args": ["src/mcp.js"],
+      "cwd": "/path/to/alpharesearch",
+      "env": {
+        "FRONTRUN_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+配置文件位置：
+- macOS: `~/Library/Application Support/Claude/settings.json`
+- Linux: `~/.config/claude/settings.json`
+
+### 方式三：命令行管道
+
+```bash
+# 输出 JSON 数据，可被其他程序消费
+npm run skill 2>/dev/null
+
+# 管道传递给 Claude Code
+npm run prod:claude
+```
+
 ## 工作流程
 
 ```
@@ -75,14 +81,14 @@ Agent 调用 npm run skill
 scripts/run.sh 检测环境
     ↓ 无图形界面？自动安装/启动 Xvfb
 Playwright + OKX Wallet 扩展
-    ↓ 打开浏览器，加载扩展
+    ↓ 打开浏览器，加载钱包扩展
 采集 alpharadar.io/twitter
     ↓ 解析 DOM，翻页采集最多 50 页
 Frontrun.pro API 验证
-    ↓ 逐个验证 KOL 关注数
-输出 JSON 结果
-    ↓ 可被管道消费
-生成研究报告
+    ↓ 逐个验证项目 KOL 关注数
+筛选 + 排序
+    ↓ KOL ≥ 3 的项目，按关注数排序
+输出 JSON / 生成报告
 ```
 
 ## 环境要求
@@ -96,14 +102,16 @@ Frontrun.pro API 验证
 
 | 命令 | 说明 |
 |------|------|
-| `npm run setup` | 一键初始化环境（适合 Agent 首次调用） |
-| `npm run skill` | 智能采集（自动检测环境） |
-| `npm run skill:report` | 采集并输出格式化报告 |
-| `npm run prod` | 本地采集（需要图形界面） |
+| `npm run setup` | 一键初始化环境（Agent 首次调用时运行） |
+| `npm run skill` | 智能采集（自动检测环境，推荐） |
+| `npm run skill:report` | 采集并输出格式化 JSON 报告 |
+| `npm run prod` | 本地采集（需要图形界面或已设置 DISPLAY） |
 | `npm run prod:server` | 服务器采集（需要已安装 Xvfb） |
 | `npm run prod:claude` | 管道输出到 Claude Code |
 | `npm run build` | 编译 TypeScript |
 | `npm run clean` | 清理编译产物 |
+| `npm run zip` | 打包扩展数据 |
+| `npm run unzip` | 解压扩展数据 |
 
 ## MCP 工具
 
@@ -112,6 +120,39 @@ Frontrun.pro API 验证
 | `collect_alpharadar_projects` | 采集 AlphaRadar 项目 |
 | `verify_kol_followers` | 验证 KOL 关注数 |
 | `generate_project_report` | 生成研究报告 |
+
+## CLI 参数
+
+```
+scraper run-task
+  --filter <type>          筛选条件：all / early-stage / high-score（默认：all）
+  --min-kol <number>       最小 KOL 关注数（默认：3）
+  --headless <bool>        无头模式（默认：true）
+  --max-pages <number>     最大采集页数（默认：50）
+```
+
+## 项目结构
+
+```
+alpharesearch/
+├── src/
+│   ├── index.ts              # CLI 入口
+│   ├── mcp.js                # MCP Server（Claude Code 集成）
+│   ├── collectors/           # 采集器
+│   ├── task/                 # 任务逻辑（scrape、zip、unzip）
+│   ├── utils/                # 工具函数（report、frontrun）
+│   ├── config/               # 配置
+│   ├── lib/                  # 库文件
+│   ├── registry/             # 注册表
+│   └── types/                # TypeScript 类型定义
+├── scripts/
+│   ├── setup.sh              # 一键环境初始化脚本
+│   └── run.sh                # 智能运行脚本
+├── extension.zip             # OKX Wallet 扩展（压缩包）
+├── package.json
+├── tsconfig.json
+└── .gitignore
+```
 
 ## 故障排除
 

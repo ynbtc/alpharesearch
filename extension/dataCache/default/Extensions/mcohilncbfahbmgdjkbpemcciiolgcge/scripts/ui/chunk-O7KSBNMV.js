@@ -1,2 +1,0 @@
-import{a as d}from"./chunk-36VSPF6F.js";import{j as i,k as s,l as a}from"./chunk-HOZVF4BW.js";import{n as c,p as u}from"./chunk-FYYT6JKZ.js";c();u();var y=()=>{let t=d(),l=o=>o,n=t?.commonStore?.currencyConversion||l,m=t?.commonStore?.computedNowCurrencySymbol||"",e={needPlaceholder:!0,needK:!1};return{getUsd:(o,r={})=>i(n(o).toString(),m,{...e,...r}),getTokenAmount:(o,r={})=>a(o,{needBillionMillionUnit:!0,...e,...r}),getPrice:(o,r={})=>s(n(o).toString(),m,{...e,...r})}};export{y as a};
-//# sourceMappingURL=chunk-O7KSBNMV.js.map

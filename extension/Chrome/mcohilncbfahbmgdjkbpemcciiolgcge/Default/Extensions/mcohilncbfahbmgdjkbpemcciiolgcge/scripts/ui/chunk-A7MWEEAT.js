@@ -1,2 +1,0 @@
-import{Hb as p,Kb as _,ta as c}from"./chunk-UEUACLVU.js";import{n as l,p as a}from"./chunk-FYYT6JKZ.js";l();a();var f=(t,o,d)=>{let{symbol:i,localType:r}=d||{},e=t("wallet_extension_popup_title_receiving_address_copied");if(!o||!i)return e;let n=_?.[r]?.[o];if(!n||r===c)return e;let s=p[n];return s&&(e=t("extension_wallet_transaction_notif_address_copied1",{address:t(s),chainName:i})),e},y=f;export{y as a};
-//# sourceMappingURL=chunk-A7MWEEAT.js.map

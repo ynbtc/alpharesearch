@@ -1,2 +1,0 @@
-import{P as n,kc as i}from"./chunk-6J4VXOEZ.js";import{n as r,p as s}from"./chunk-ZEZMBTIY.js";r();s();var l=async(t,e,a)=>{try{return await n().getNewAddress({__secretData__:{coinType:t,data:{privateKey:e,hrp:a}}}),!0}catch{return!1}},p=async(t,e)=>{let a=[],o=i(e);return await Promise.all(o.map(({coinType:c,cosmosPrefix:y,baseChain:u})=>l(c,t,y).then(h=>{h&&a.push(u)}))),a},B=async(t,e)=>await p(t,e),f=async(t,e)=>{let a=await B(t,e);return Boolean(a[0])};export{B as a,f as b};
-//# sourceMappingURL=chunk-6HCWLAZ2.js.map
