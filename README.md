@@ -42,3 +42,54 @@ Options:
   -r, --remove <boolean>    执行前清理浏览器用户数据（默认 true）
   -l, --headless <boolean>  无头模式（默认 true）
 ```
+
+## 服务器部署（无图形界面 Linux）
+
+本项目依赖 Chrome 扩展，无法在纯 headless 模式下运行。在没有图形界面的 Linux 服务器上，需使用 Xvfb 虚拟显示器。
+
+### 安装系统依赖
+
+```bash
+# Ubuntu / Debian
+sudo apt-get update
+sudo apt-get install -y xvfb
+
+# CentOS / RHEL
+sudo yum install -y xorg-x11-server-Xvfb
+```
+
+### 安装项目
+
+```bash
+git clone https://github.com/ynbtc/alpharesearch.git
+cd alpharesearch
+npm install   # postinstall 会自动安装 Chromium 及系统依赖
+```
+
+### 运行采集
+
+```bash
+# 服务器专用命令（通过 Xvfb 虚拟显示器运行）
+npm run prod:server
+
+# 管道输出到 Claude Code
+npm run prod:server:claude
+```
+
+### 原理说明
+
+- `xvfb-run` 会创建一个虚拟 X11 显示器
+- `-l false` 让 Playwright 以非 headless 模式启动 Chromium
+- Chrome 扩展（OKX Wallet）在虚拟显示器中正常加载和运行
+- 所有页面操作（导航、点击、DOM 解析、翻页）与本地运行完全一致
+
+### 故障排除
+
+**问题**: `xvfb-run: command not found`
+**解决**: `sudo apt-get install -y xvfb`
+
+**问题**: Chromium 启动失败，报权限错误
+**解决**: 确保启动参数包含 `--no-sandbox`（已在代码中添加）
+
+**问题**: 采集到空数据
+**解决**: 检查 `/tmp/alpharesearch-debug.png` 截图和 `/tmp/alpharesearch-debug.html` 页面内容，确认页面是否正常加载
