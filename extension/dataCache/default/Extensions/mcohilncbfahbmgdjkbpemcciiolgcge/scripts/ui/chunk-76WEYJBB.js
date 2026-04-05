@@ -1,2 +1,0 @@
-import{K as u}from"./chunk-IWJPUYZC.js";import{o as s,p as e}from"./chunk-KLLK5BWP.js";import{n,p as o}from"./chunk-FYYT6JKZ.js";n();o();var T=async({chainId:i,address:c,contractAddress:m,coinId:S})=>{let d=await u({chainId:i,address:c,contractAddress:m,coinId:S}),{status:r,alertMessage:E,url:g,register:a}=d||{},t={alertMessage:E,url:g,register:a,status:e.PROCESSING};return a||r===s.SUCCESS?(t.status=e.COMPLETED,t):((r===s.NONE||r===s.TIMEOUT||r===s.ERROR)&&(t.status=e.NOT_STARTED),t)};export{T as a};
-//# sourceMappingURL=chunk-76WEYJBB.js.map

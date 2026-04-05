@@ -1,3 +1,5 @@
+[English](README_EN.md)
+
 # AlphaResearch
 
 基于 Playwright 的 AlphaRadar 早期项目研究工具。自动采集 AlphaRadar 项目数据 → Frontrun.pro API 验证 KOL 关注数 → 生成项目研究报告。

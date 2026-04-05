@@ -1,2 +1,0 @@
-import{a as r,b as d}from"./chunk-SYLHJGFM.js";import{g as c}from"./chunk-SJZLJDIY.js";import{qa as a}from"./chunk-LJ4BS5HU.js";import{b as p}from"./chunk-LJTXD3DL.js";import{e as E,n as s,p as t}from"./chunk-FYYT6JKZ.js";s();t();var e=E(p());var A=()=>{let i=a(),[o]=d(r.hiddenAssets),[n,m]=(0,e.useState)(o),u=(0,e.useCallback)(async()=>{m(f=>!f),await i(c(!n))},[i,n]);return(0,e.useEffect)(()=>{m(o)},[o]),[n,u]};s();t();export{A as a};
-//# sourceMappingURL=chunk-UOMBFMIN.js.map

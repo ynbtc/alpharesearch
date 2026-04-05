@@ -1,2 +1,0 @@
-import{o as r}from"./chunk-C6BUIIW6.js";import{n as t,p as a}from"./chunk-FYYT6JKZ.js";t();a();var c={seedPhrase:"",privateKey:"",unlockHardwareWallets:{},chooseNetworkList:[],mpcInfo:{},isTonMnemonicImport:!1},s=r({name:"importAccount",initialState:c,reducers:{setUnlockHardwareWallets:(e,o)=>{e.unlockHardwareWallets=o.payload},setMpcInfo:(e,o)=>{e.mpcInfo=o.payload}}}),{actions:n,reducer:l}=s,p=l,{setUnlockHardwareWallets:m,setMpcInfo:f}=n;export{p as a,m as b,f as c};
-//# sourceMappingURL=chunk-26STSS77.js.map

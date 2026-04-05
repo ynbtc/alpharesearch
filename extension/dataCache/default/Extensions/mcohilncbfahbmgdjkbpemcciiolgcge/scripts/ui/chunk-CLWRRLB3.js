@@ -1,2 +1,0 @@
-import{qa as r}from"./chunk-LJ4BS5HU.js";import{i as a}from"./chunk-CAAMBDS5.js";import{c as t}from"./chunk-4F5WSIDH.js";import{b as h}from"./chunk-LJTXD3DL.js";import{e as m,n as i,p as s}from"./chunk-FYYT6JKZ.js";i();s();var n=m(h());var c=()=>{let e=r();return(0,n.useCallback)(async({id:o,result:p,error:u})=>{await t().finishRequest({id:o,result:p,error:u}),await a(e)},[e])},D=c;export{D as a};
-//# sourceMappingURL=chunk-CLWRRLB3.js.map
