@@ -12,6 +12,14 @@ interface ProjectInfo {
     kolFollowers?: number;
 }
 /**
+ * 判断是否为非项目账号
+ */
+export declare function isNonProjectAccount(project: {
+    name: string;
+    twitterHandle: string;
+    description?: string;
+}): boolean;
+/**
  * 生成 AlphaRadar 项目研究报告
  * @param projects 项目列表
  * @param date 报告日期

@@ -25,36 +25,90 @@ interface ReportProject {
 }
 
 /**
+ * 非项目账号关键词黑名单（按 _ - 空格分词后匹配）
+ */
+const NON_PROJECT_KEYWORDS = [
+  'research', 'analyst', 'analysis', 'alerts', 'alpha',
+  'trader', 'trading', 'trades', 'capital', 'ventures',
+  'vc', 'fund', 'invest', 'investor', 'news', 'media',
+  'daily', 'digest', 'calls', 'signal', 'kol', 'host',
+  'spaces', 'podcast', 'thread', 'degenerate', 'degen',
+];
+
+/**
+ * 个人号/非项目号的正则模式
+ */
+const NON_PROJECT_PATTERNS = [
+  /^0x[a-f0-9]{4,}$/i,
+  /\.eth$/i,
+  /_eth$/i,
+  /^(the|ser|mr|ms|dr|prof)/i,
+  /guru|master|king|queen|lord|chief/i,
+];
+
+/**
+ * 判断是否为非项目账号
+ */
+export function isNonProjectAccount(project: { name: string; twitterHandle: string; description?: string }): boolean {
+  const handle = (project.twitterHandle || '').replace('@', '').toLowerCase();
+  const name = (project.name || '').toLowerCase();
+
+  const handleWords = handle.split(/[_\s-]+/);
+  const nameWords = name.split(/[_\s-]+/);
+  const allWords = [...handleWords, ...nameWords];
+
+  for (const word of allWords) {
+    if (NON_PROJECT_KEYWORDS.includes(word)) {
+      return true;
+    }
+  }
+
+  for (const pattern of NON_PROJECT_PATTERNS) {
+    if (pattern.test(handle) || pattern.test(name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * 生成 AlphaRadar 项目研究报告
  * @param projects 项目列表
  * @param date 报告日期
  * @returns 格式化的报告文本
  */
 export function generateReport(
-  projects: ProjectInfo[], 
+  projects: ProjectInfo[],
   date: string = new Date().toISOString().split('T')[0]
 ): string {
-  // 筛选有 KOL 关注的项目（≥3）
+  // 筛选早期 Alpha 项目（3 ≤ KOL ≤ 100）
   const qualifiedProjects = projects
-    .filter(p => (p.kolFollowers || 0) >= 3)
+    .filter(p => {
+      const kol = p.kolFollowers || 0;
+      return kol >= 3 && kol <= 100;
+    })
     .sort((a, b) => (b.kolFollowers || 0) - (a.kolFollowers || 0))
-    .slice(0, 20); // 取前20个
+    .slice(0, 20);
 
   if (qualifiedProjects.length === 0) {
-    return `📊 今日热门项目 (${date})\n\n暂无符合条件的项目（KOL关注数 ≥ 3）`;
+    return `📊 今日热门项目 (${date})\n\n暂无符合条件的项目（3 ≤ KOL关注数 ≤ 100）`;
   }
 
-  let report = `📊 今日热门项目 (${date})\n\n`;
+  let report = `📊 今日热门项目 (${date})\n`;
+  report += `筛选条件：3 ≤ KOL关注数 ≤ 100（早期 Alpha 项目）\n`;
+  report += `共计：${qualifiedProjects.length} 个项目\n\n`;
 
   qualifiedProjects.forEach((project, index) => {
     const rank = index + 1;
-    const description = generateDescription(project);
-    const stars = '⭐️'.repeat(Math.min(Math.ceil((project.kolFollowers || 0) / 30), 5));
-    
+    const description = (project.description && project.description.length > 10)
+      ? project.description
+      : generateDescription(project);
+
     report += `${rank}、项目名称：${project.name}\n`;
     report += `项目推特：${project.twitterUrl}\n`;
     report += `项目介绍：${description}\n`;
-    report += `KOL关注数：${project.kolFollowers}${stars}\n\n`;
+    report += `KOL关注数：${project.kolFollowers}⭐️\n\n`;
   });
 
   return report.trim();
@@ -105,29 +159,35 @@ export async function validateProjectsWithKOL(
   projects: ProjectInfo[]
 ): Promise<ProjectInfo[]> {
   console.log(`[*] 开始验证 ${projects.length} 个项目的 KOL 数据...`);
-  
+
   const validatedProjects: ProjectInfo[] = [];
-  
+
   for (const project of projects) {
+    if (isNonProjectAccount(project)) {
+      console.log(`[✗] ${project.name}: 非项目账号（KOL/媒体/交易员），跳过`);
+      continue;
+    }
+
     const kolCount = await getKOLFollowers(project.twitterHandle);
-    
-    if (kolCount !== null && kolCount >= 3) {
+
+    if (kolCount !== null && kolCount >= 3 && kolCount <= 100) {
       validatedProjects.push({
         ...project,
         kolFollowers: kolCount
       });
       console.log(`[✓] ${project.name}: ${kolCount} KOL 关注`);
-    } else if (kolCount !== null) {
+    } else if (kolCount !== null && kolCount > 100) {
+      console.log(`[✗] ${project.name}: ${kolCount} KOL 关注（> 100，疑似老项目，跳过）`);
+    } else if (kolCount !== null && kolCount < 3) {
       console.log(`[✗] ${project.name}: ${kolCount} KOL 关注（< 3，跳过）`);
     } else {
       console.log(`[✗] ${project.name}: API 查询失败`);
     }
-    
-    // 延迟避免限流
+
     await new Promise(resolve => setTimeout(resolve, 500));
   }
-  
-  console.log(`[*] 验证完成：${validatedProjects.length}/${projects.length} 个项目符合条件`);
+
+  console.log(`[*] 验证完成：${validatedProjects.length}/${projects.length} 个项目符合条件（3 ≤ KOL ≤ 100）`);
   return validatedProjects;
 }
 

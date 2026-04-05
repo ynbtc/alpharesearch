@@ -40,9 +40,13 @@ class ScraperCollector extends AbstractCollector_1.default {
             args: [
                 `--load-extension=${dir}`,
                 `--disable-extensions-except=${dir}`,
+                "--no-sandbox",
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
             ],
         };
-        if (this.headless) {
+        // Xvfb 环境或 headless 模式下都录制视频
+        if (this.headless || process.env.DISPLAY) {
             options.recordVideo = {
                 dir: config_1.REPORT_PATH,
                 size: config_1.VIDEO_SIZE,
@@ -50,9 +54,7 @@ class ScraperCollector extends AbstractCollector_1.default {
         }
         const browser = await playwright_1.chromium.launchPersistentContext(config_1.USER_DATA_PATH, options);
         const page = await browser.newPage();
-        if (this.headless) {
-            await page.setViewportSize(config_1.VIDEO_SIZE);
-        }
+        await page.setViewportSize(config_1.VIDEO_SIZE);
         this.browser = browser;
         await page.goto(this.extension.home);
         await page.waitForTimeout(5000);
