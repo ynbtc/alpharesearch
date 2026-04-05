@@ -1,2 +1,0 @@
-import{n as e,p as o}from"./chunk-FYYT6JKZ.js";e();o();var r={coinTickers:"coinTickers",catTokensConfig:"catTokensConfig",catSpendsConfig:"catSpendsConfig",keyringController:"KeyringController",moonCatData:"backHistory",chainController:"ChainController",reportedCoins:"reportedCoins",silentSignUnderstood:"silentSignUnderstood",newUserFlag:"newUserFlag",agreedTermsVersion:"agreedTermsVersion"};export{r as a};
-//# sourceMappingURL=chunk-Z62QBUF7.js.map

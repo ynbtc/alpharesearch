@@ -1,2 +1,0 @@
-import{a as f}from"./chunk-3VESBTQY.js";import{r as u,ra as a}from"./chunk-LJ4BS5HU.js";import{j as m}from"./chunk-JJ5L3BTH.js";import{n as t,p as s}from"./chunk-FYYT6JKZ.js";t();s();var c=e=>{let o=a(u),d=f(),n=(p,i)=>d.find(r=>r.appBaseChain==="ethereum"?i&&r.localType===i||m(r.realChainId,p):!1)||{};return e?n(e):n(o.chainId,o.type)},B=c;export{B as a};
-//# sourceMappingURL=chunk-5JMNF4Q5.js.map

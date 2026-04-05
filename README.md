@@ -1,8 +1,18 @@
+[English](README_EN.md)
+
 # AlphaResearch
 
-基于 Playwright 的 AlphaRadar 早期项目研究工具。自动采集 AlphaRadar 项目数据 → Frontrun.pro API 验证 KOL 关注数 → 生成项目研究报告。
+基于 Playwright 的 AlphaRadar 早期项目研究工具。自动采集 AlphaRadar 项目数据 → 提取 AI 分析 → Frontrun.pro API 验证 KOL 关注数 → 智能筛选早期 Alpha 项目 → 生成项目研究报告。
 
-**设计为可被其他 Agent 直接调用的 Skill，支持自动环境初始化。**
+**设计为可被其他 Agent 直接调用的 Skill，支持自动环境初始化，无需人工干预。**
+
+## 核心功能
+
+- 🔍 **自动采集** AlphaRadar 项目列表（多页翻页）
+- 🤖 **提取 AI 分析** 点击 Details 弹窗获取项目 AI 分析作为介绍
+- 🚫 **智能剔除** 非项目账号（KOL/交易员/媒体/个人大V 等）
+- 📐 **区间过滤** 3 ≤ KOL关注数 ≤ 100（锁定早期 Alpha 项目）
+- 📊 **生成报告** 每日早期 Alpha 项目研究报告
 
 ## 快速开始
 
@@ -11,7 +21,7 @@
 ```bash
 git clone https://github.com/ynbtc/alpharesearch.git
 cd alpharesearch
-npm run setup   # 自动安装所有依赖（Xvfb、Chromium 系统库、npm 包）
+npm run setup   # 自动安装所有依赖
 ```
 
 ### 运行采集
@@ -21,23 +31,58 @@ npm run skill          # 自动检测环境，智能选择运行方式
 npm run skill:report   # 采集并输出格式化报告
 ```
 
-`scripts/run.sh` 会自动检测运行环境：
-- **有图形界面**：直接启动浏览器
-- **无图形界面（服务器）**：自动安装并使用 Xvfb 虚拟显示器
-- **缺少依赖**：自动安装 xvfb 和 Chromium 系统库
+## 筛选流程
+
+```
+AlphaRadar 表格逐页采集
+    ↓
+逐行点击 Details → 提取 AI 分析
+    ↓
+非项目账号剔除（关键词 + 正则匹配）
+    ↓ 剔除 KOL、交易员、博主、媒体号、个人大V
+Frontrun.pro API → KOL 关注数
+    ↓
+区间过滤 3 ≤ KOL ≤ 100
+    ↓ 剔除无人关注（< 3）和老项目（> 100）
+按 KOL 降序排列，取 Top 20
+    ↓
+📊 输出每日早期 Alpha 项目报告
+```
+
+## 报告示例
+
+```
+📊 今日热门项目 (2026-04-06)
+筛选条件：3 ≤ KOL关注数 ≤ 100（早期 Alpha 项目）
+共计：12 个项目
+
+1、项目名称：Surgexyz_
+项目推特：https://x.com/Surgexyz_
+项目介绍：下一代创业公司发现层，专注AI独角兽孵化
+KOL关注数：93⭐️
+
+2、项目名称：24_Hours_Art
+项目推特：https://x.com/24_Hours_Art
+项目介绍：数字艺术市场与创意经济平台
+KOL关注数：55⭐️
+```
 
 ## 作为 Skill 被其他 Agent 调用
 
-### Claude Code MCP 方式
+### 方式一：命令行直接调用
 
-在 Claude Code 配置文件中添加：
+```bash
+cd /path/to/alpharesearch && npm run setup && npm run skill
+```
+
+### 方式二：Claude Code MCP
 
 ```json
 {
   "mcpServers": {
     "alpharesearch": {
       "command": "node",
-      "args": ["dist/mcp.js"],
+      "args": ["src/mcp.js"],
       "cwd": "/path/to/alpharesearch",
       "env": {
         "FRONTRUN_API_KEY": "your-api-key"
@@ -47,86 +92,83 @@ npm run skill:report   # 采集并输出格式化报告
 }
 ```
 
-### 命令行管道方式
+### 方式三：管道模式
 
 ```bash
-# 输出 JSON 数据，可被其他程序消费
-npm run skill 2>/dev/null
-
-# 管道传递给 Claude Code
-npm run prod:claude
-```
-
-### 其他 Agent 调用
-
-任何 Agent 只需执行以下命令即可完成整个研究流程：
-
-```bash
-cd /path/to/alpharesearch && npm run setup && npm run skill
-```
-
-`setup` 脚本是幂等的，重复运行不会重复安装。
-
-## 工作流程
-
-```
-Agent 调用 npm run skill
-    ↓
-scripts/run.sh 检测环境
-    ↓ 无图形界面？自动安装/启动 Xvfb
-Playwright + OKX Wallet 扩展
-    ↓ 打开浏览器，加载扩展
-采集 alpharadar.io/twitter
-    ↓ 解析 DOM，翻页采集最多 50 页
-Frontrun.pro API 验证
-    ↓ 逐个验证 KOL 关注数
-输出 JSON 结果
-    ↓ 可被管道消费
-生成研究报告
+npm run skill 2>/dev/null | your-agent-process
 ```
 
 ## 环境要求
 
-- Node.js >= 18.0.0
-- Linux / macOS（Windows 暂不支持 Xvfb 自动安装）
+| 依赖 | 版本 |
+|------|------|
+| Node.js | >= 18 |
+| npm | >= 8 |
+| Playwright | >= 1.40 |
+| Xvfb | 自动安装（Linux 服务器） |
 
-服务器环境无需手动安装任何系统依赖，`npm run setup` 会自动处理。
-
-## 所有可用命令
+## 可用命令
 
 | 命令 | 说明 |
 |------|------|
-| `npm run setup` | 一键初始化环境（适合 Agent 首次调用） |
-| `npm run skill` | 智能采集（自动检测环境） |
-| `npm run skill:report` | 采集并输出格式化报告 |
-| `npm run prod` | 本地采集（需要图形界面） |
-| `npm run prod:server` | 服务器采集（需要已安装 Xvfb） |
-| `npm run prod:claude` | 管道输出到 Claude Code |
+| `npm run setup` | 一键初始化环境 |
+| `npm run skill` | 智能运行采集 |
+| `npm run skill:report` | 采集并输出报告 |
 | `npm run build` | 编译 TypeScript |
-| `npm run clean` | 清理编译产物 |
+| `npm run prod` | 直接运行（需图形界面） |
+| `npm run prod:server` | Xvfb 模式运行 |
 
-## MCP 工具
+## 非项目账号剔除规则
 
-| 工具 | 功能 |
-|------|------|
-| `collect_alpharadar_projects` | 采集 AlphaRadar 项目 |
-| `verify_kol_followers` | 验证 KOL 关注数 |
-| `generate_project_report` | 生成研究报告 |
+按 handle/name 分词后匹配以下关键词：
+> research, analyst, alpha, trader, capital, vc, fund, news, media, daily, kol, host, spaces, podcast, degen, calls, alerts, signal, thread, investor...
+
+正则剔除：0x 地址、.eth 域名、个人前缀（ser/mr/dr）、品牌词（guru/king/master）
+
+## 项目结构
+
+```
+alpharesearch/
+├── scripts/
+│   ├── setup.sh          # 环境初始化
+│   └── run.sh            # 智能运行器
+├── src/
+│   ├── index.ts          # CLI 入口
+│   ├── mcp.js            # MCP Server
+│   ├── config/           # 配置（扩展列表、路径）
+│   ├── collectors/
+│   │   └── ScraperCollector/
+│   │       ├── index.ts  # Playwright 控制器
+│   │       ├── unlockWallet.ts
+│   │       └── PageCollector/
+│   │           └── AlphaRadar/
+│   │               └── index.ts  # 采集 + Details AI 分析提取
+│   ├── utils/
+│   │   ├── report.ts     # 筛选 + 报告生成
+│   │   ├── frontrun.ts   # Frontrun.pro API
+│   │   └── ...
+│   ├── types/
+│   │   └── Scrape.ts     # ProjectInfo 接口
+│   └── task/
+│       └── scrape.ts     # 采集任务入口
+├── extension.zip          # OKX Wallet 扩展
+├── package.json
+├── tsconfig.json
+├── README.md             # 中文文档
+└── README_EN.md          # 英文文档
+```
 
 ## 故障排除
 
-**问题**: `xvfb-run: command not found`
-**解决**: 运行 `npm run setup` 或 `sudo apt-get install -y xvfb`
-
-**问题**: Chromium 启动失败
-**解决**: 运行 `npx playwright install --with-deps chromium`
-
-**问题**: 采集到空数据
-**解决**: 检查 `/tmp/alpharesearch-debug.png` 截图确认页面是否正常加载
-
-**问题**: Frontrun API 返回 401
-**解决**: 检查 `FRONTRUN_API_KEY` 环境变量
+| 问题 | 解决方案 |
+|------|---------|
+| Chromium 无法启动 | 运行 `npm run setup` 安装系统依赖 |
+| 无图形界面 | `scripts/run.sh` 会自动使用 Xvfb |
+| Frontrun API 401 | 检查 `FRONTRUN_API_KEY` 环境变量 |
+| AlphaRadar 采集失败 | 确保已运行 `npm run unzip` 解压扩展 |
+| Details 弹窗提取为空 | 正常现象，会降级使用模板描述 |
 
 ## 许可证
 
 MIT
+

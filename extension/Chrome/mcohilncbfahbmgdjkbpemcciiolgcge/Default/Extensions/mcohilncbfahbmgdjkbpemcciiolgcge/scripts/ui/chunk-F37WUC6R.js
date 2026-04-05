@@ -1,2 +1,0 @@
-import{m as D}from"./chunk-DRS34UNZ.js";import{n as r,p as o}from"./chunk-FYYT6JKZ.js";r();o();var i=90;function u(e){let t=new Date(e);return t.setHours(0,0,0,0),t}function m(e){let t=new Date(e);return t.setHours(23,59,59,999),t}function l(e){let[t,a]=e,n=u(t),s=m(a);return{dates:[n,s],timestamps:{startTime:n.getTime(),endTime:s.getTime()}}}function f(e=i){let t=u(D.subtract(e,"d")),a=m(new Date);return{dates:[t,a]}}export{l as a,f as b};
-//# sourceMappingURL=chunk-F37WUC6R.js.map

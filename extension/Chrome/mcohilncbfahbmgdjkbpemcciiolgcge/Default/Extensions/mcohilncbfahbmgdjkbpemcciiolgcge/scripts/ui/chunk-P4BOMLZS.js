@@ -1,2 +1,0 @@
-import{b as c,c as d}from"./chunk-IWJPUYZC.js";import{Pa as o}from"./chunk-UEUACLVU.js";import{n as e,p as m}from"./chunk-FYYT6JKZ.js";e();m();var u=async({coinId:n,fromAddress:s,value:t,inputData:r})=>{let i={coinId:n||o,address:s,value:t,inputData:r},{data:a}=await d(i);return a},P=async({coinId:n,fromAddress:s,toAddress:t,value:r})=>await c({coinId:n||o,fromAddr:s,value:r,toAddr:t});export{u as a,P as b};
-//# sourceMappingURL=chunk-P4BOMLZS.js.map

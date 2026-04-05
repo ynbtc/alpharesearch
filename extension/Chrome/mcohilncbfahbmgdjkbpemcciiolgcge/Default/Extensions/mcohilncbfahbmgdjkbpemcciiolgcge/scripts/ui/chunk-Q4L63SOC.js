@@ -1,2 +1,0 @@
-import{a as g}from"./chunk-OZR7UXI3.js";import{a as i}from"./chunk-CIFG5IVV.js";import{a as p,b as m}from"./chunk-HQRIVSKW.js";import{K as s,c as n}from"./chunk-3QNHSG2E.js";import{b as a}from"./chunk-RG6QTVES.js";import{n as t,p as o}from"./chunk-FYYT6JKZ.js";t();o();var f=async({key:r})=>{try{return await p(r)}catch{return null}},c=async({key:r,value:e})=>{try{return await m(r,e)}catch{return!1}},l=new i({ont:n,getApiHostname:a,interceptorHeaders:s,getDappStorage:f,setDappStorage:c,getReferralAllAddressMap:g}),_=l;export{_ as a};
-//# sourceMappingURL=chunk-Q4L63SOC.js.map

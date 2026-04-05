@@ -1,2 +1,0 @@
-import{f as d}from"./chunk-2QAUDADX.js";import{h as p}from"./chunk-Y7WTYQMZ.js";import{F as a,G as m,ra as t}from"./chunk-LJ4BS5HU.js";import{b as c}from"./chunk-LJTXD3DL.js";import{e as C,n as i,p as l}from"./chunk-FYYT6JKZ.js";i();l();var s=C(c());function M(u){let e=t(a),r=t(m),f=p(),o=u??f;return(0,s.useCallback)(n=>n?d({coins:n,walletIdentityMap:e,createdMap:r,walletId:o}):[],[e,r,o])}export{M as a};
-//# sourceMappingURL=chunk-USUXEG7W.js.map
