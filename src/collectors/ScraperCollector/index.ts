@@ -41,10 +41,14 @@ export class ScraperCollector extends AbstractCollector {
       args: [
         `--load-extension=${dir}`,
         `--disable-extensions-except=${dir}`,
+        "--no-sandbox",
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
       ],
     };
 
-    if (this.headless) {
+    // Xvfb 环境或 headless 模式下都录制视频
+    if (this.headless || process.env.DISPLAY) {
       options.recordVideo = {
         dir: REPORT_PATH,
         size: VIDEO_SIZE,
@@ -53,10 +57,7 @@ export class ScraperCollector extends AbstractCollector {
 
     const browser = await chromium.launchPersistentContext(USER_DATA_PATH, options);
     const page = await browser.newPage();
-
-    if (this.headless) {
-      await page.setViewportSize(VIDEO_SIZE);
-    }
+    await page.setViewportSize(VIDEO_SIZE);
 
     this.browser = browser;
 
