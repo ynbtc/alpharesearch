@@ -1,2 +1,0 @@
-import{Gb as r,Nb as t,Ob as s}from"./chunk-UEUACLVU.js";import{n,p as o}from"./chunk-FYYT6JKZ.js";n();o();var g=e=>t.LEDGER_BRIDGE_KEYRING===e,a=e=>t.TREZOR_KEYRING===e,K=e=>t.KEYSTONE_KEYRING===e,T=e=>t.ONEKEY_KEYRING===e,E=new Set([t.LEDGER_BRIDGE_KEYRING,t.TREZOR_KEYRING,t.KEYSTONE_KEYRING,t.ONEKEY_KEYRING]),p=e=>E.has(e),G=e=>e===s.HARDWARE,I={[r.LEGACY]:"Legacy",[r.SEGWIT_NESTED_49]:"segwit_nested",[r.SEGWIT_NATIVE]:"segwit_native"};export{g as a,a as b,K as c,T as d,p as e,G as f,I as g};
-//# sourceMappingURL=chunk-IRB4XVK7.js.map

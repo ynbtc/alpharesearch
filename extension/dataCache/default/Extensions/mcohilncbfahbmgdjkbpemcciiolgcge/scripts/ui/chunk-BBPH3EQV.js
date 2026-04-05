@@ -1,2 +1,0 @@
-import{n as t,p as n}from"./chunk-FYYT6JKZ.js";t();n();var e=class{constructor(o){this.walletProvider=o}async sendTransaction(){throw new Error("sendTransaction method not implemented")}async getAccount(){throw new Error("getAccount method not implemented")}async signMessage(){throw new Error("signMessage method not implemented")}async getChainId(){throw new Error("getChainId method not implemented")}async switchNetwork(){throw new Error("switchNetwork method not implemented")}},c=e;export{c as a};
-//# sourceMappingURL=chunk-BBPH3EQV.js.map

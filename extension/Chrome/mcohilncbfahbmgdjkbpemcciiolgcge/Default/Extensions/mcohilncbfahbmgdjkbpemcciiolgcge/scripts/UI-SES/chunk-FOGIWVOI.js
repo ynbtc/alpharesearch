@@ -1,2 +1,0 @@
-import{a as e}from"./chunk-3IU7THOE.js";import{l as n,m as s}from"./chunk-37OA4TXC.js";import{n as r,p as t}from"./chunk-ZEZMBTIY.js";r();t();async function u(){return!!(navigator.credentials&&!!navigator.credentials.create&&e()!==s&&e()!==n)}async function p(){if(PublicKeyCredential&&!!PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable)try{if(await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())return!0}catch{return!1}return!1}export{u as a,p as b};
-//# sourceMappingURL=chunk-FOGIWVOI.js.map

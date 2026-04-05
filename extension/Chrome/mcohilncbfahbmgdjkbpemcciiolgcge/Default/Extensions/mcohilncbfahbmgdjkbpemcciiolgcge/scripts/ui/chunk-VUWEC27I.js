@@ -1,2 +1,0 @@
-import{a as s}from"./chunk-DJ6N76ZE.js";import{b as a}from"./chunk-LJTXD3DL.js";import{e as c,n as o,p as i}from"./chunk-FYYT6JKZ.js";o();i();var p=c(a());var x=n=>{let{currentNetworkUniqueId:e}=s();return(0,p.useMemo)(()=>{let t=n||[];return e!==""?t.filter(r=>r?.type===1?!Array.isArray(r?.chainList)||Array.isArray(r?.chainList)&&!r?.chainList?.length?!1:r?.chainList?.findIndex(u=>Number(u?.chainIndex)===Number(e))!==-1:+r?.chainId==+e):t},[n,e])};export{x as a};
-//# sourceMappingURL=chunk-VUWEC27I.js.map

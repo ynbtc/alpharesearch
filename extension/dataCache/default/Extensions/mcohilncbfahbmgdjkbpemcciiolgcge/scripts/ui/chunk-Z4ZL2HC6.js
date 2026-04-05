@@ -1,2 +1,0 @@
-import{h as g}from"./chunk-UMESQ67G.js";import{V as a,ra as t}from"./chunk-LJ4BS5HU.js";import{b as s}from"./chunk-LJTXD3DL.js";import{e as p,n as r,p as e}from"./chunk-FYYT6JKZ.js";r();e();var m=p(s());function C(){let o=t(a),i=t(g),n=(0,m.useMemo)(()=>i.find(u=>u.origin===o),[o,i]);return!n||!n.origin?null:{...n,origin:n.origin,originNoPrefix:n.origin.replace(/^https?:\/\//iu,"")}}export{C as a};
-//# sourceMappingURL=chunk-Z4ZL2HC6.js.map

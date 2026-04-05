@@ -1,2 +1,0 @@
-import{Ob as r}from"./chunk-UEUACLVU.js";import{n as t,p as n}from"./chunk-FYYT6JKZ.js";t();n();t();n();var d=2*24*60*60*1e3,O=e=>!(!e||e?.keyringIdentityType!==r.MNEMONIC||e?.needBackup!==0),m=e=>{if(!e)return"not_enabled";let{isCreated:E,isActive:i,expiredTimestamp:a,autoRenew:o}=e;if(!E)return"not_enabled";if(!i)return"expired";let _=e.teeServiceVersion!==e.teeNewestVersion;if(o&&!_)return"enabled";let R=Date.now(),s=a-R;return s<=0?"expired":s<d?"expiring":"enabled"};export{O as a,m as b};
-//# sourceMappingURL=chunk-C4RXMYIT.js.map
