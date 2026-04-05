@@ -1,2 +1,0 @@
-import{n as s,p as c}from"./chunk-FYYT6JKZ.js";s();c();var o={getAccount:async({provider:t})=>{let[a]=await t?.starknet?.enable();return a},signMessage:async({provider:t,message:a})=>(await t?.starknet?.enable(),await t?.starknet?.account?.signMessage(a)),sendTransaction:async({provider:t,payload:a,cb:n,abi:r})=>{await t?.starknet?.enable();let{transaction_hash:e}=await t?.starknet?.account?.execute(a,r);return n&&n(e),e}},i=o;export{i as default};
-//# sourceMappingURL=Starknet-Q6RP6ORA.js.map

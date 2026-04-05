@@ -1,2 +1,0 @@
-import{d as m}from"./chunk-HOZVF4BW.js";import{U as t}from"./chunk-3IEGY6MV.js";import{n,p as o}from"./chunk-FYYT6JKZ.js";n();o();var u=(r,i)=>{if(!r)return t.formatCurrency(r,{code:i,isSymbol:!1});try{let e=t.parseLocaleNumber(String(r));if(typeof e=="number"&&!Number.isNaN(e)&&Number.isFinite(e))return m(e,{code:i,isSymbol:!1}).value}catch{}return t.formatCurrency(r,{code:i,isSymbol:!1})};export{u as a};
-//# sourceMappingURL=chunk-T2MJA2IH.js.map

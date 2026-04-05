@@ -1,2 +1,0 @@
-import{c as e}from"./chunk-OPAQE3AA.js";import{a as f}from"./chunk-OKN5NMV2.js";import{b as p}from"./chunk-LJTXD3DL.js";import{e as r,n as o,p as t}from"./chunk-FYYT6JKZ.js";o();t();var a=r(p()),i=r(f());o();t();var n={root:"_root_1k6p7_1"};function l({children:m,className:c,style:s}){return a.default.createElement(e.Space,{direction:e.DIRECTION.vertical,space:24,className:(0,i.default)(n.root,c),style:s},m)}export{l as a};
-//# sourceMappingURL=chunk-37UZ7C73.js.map

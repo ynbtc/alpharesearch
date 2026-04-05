@@ -1,2 +1,0 @@
-import{a}from"./chunk-Z4ZL2HC6.js";import{a as u}from"./chunk-LKIJ4HQZ.js";import{b as C}from"./chunk-LJTXD3DL.js";import{e as d,n as o,p as t}from"./chunk-FYYT6JKZ.js";o();t();o();t();var m=0;o();t();var s=d(C());var f=64,h=({isButtonAbsolute:n=!1,backupHeight:e=0})=>{let{isNotBackupWallet:i}=u(),r=a()?.originNoPrefix&&!i,p=(0,s.useMemo)(()=>n?e+80+m+(r?f:0):16,[n,r,e]),c=(0,s.useMemo)(()=>n?0:e+24+m+(r?f:0),[n,r,e]);return{paddingBottom:p,buttonPaddingBottom:c,absoluteBottom:e+24+m+(r?f:0)}};export{m as a,h as b};
-//# sourceMappingURL=chunk-H53OPCYQ.js.map
