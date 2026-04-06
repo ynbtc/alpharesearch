@@ -156,22 +156,67 @@ async function extractProjectsFromDom(page: Page): Promise<ProjectInfo[]> {
   });
 }
 
-async function navigateToNextPage(page: Page): Promise<boolean> {
+/**
+ * 点击时间范围筛选器，选择 7d（7天）
+ * AlphaRadar 页面顶部有时间筛选按钮组，通常是 1d / 7d / 30d / All 等
+ */
+async function selectTimeRange(page: Page): Promise<boolean> {
+  // 尝试多种选择器来定位 7d 按钮
   const selectors = [
-    'button.ant-pagination-next:not([disabled])',
-    '.ant-pagination-next button:not([disabled])',
-    '.ant-pagination-next:not(.ant-pagination-disabled)',
-    'li.ant-pagination-next:not(.ant-pagination-disabled)',
+    // 按钮文本匹配
+    'button:has-text("7d")',
+    'span:has-text("7d")',
+    'div:has-text("7d")',
+    'a:has-text("7d")',
+    // Ant Design Radio Button / Segmented 组件
+    '.ant-radio-button-wrapper:has-text("7d")',
+    '.ant-segmented-item:has-text("7d")',
+    '.ant-btn:has-text("7d")',
+    // 通用选择器
+    '[class*="time"] button:has-text("7d")',
+    '[class*="filter"] button:has-text("7d")',
+    '[class*="range"] button:has-text("7d")',
+    '[class*="period"] button:has-text("7d")',
   ];
 
   for (const selector of selectors) {
-    const nextBtn = await page.$(selector);
-    if (nextBtn) {
-      await nextBtn.click().catch(() => {});
-      await page.waitForTimeout(2500);
-      return true;
+    try {
+      const btn = await page.$(selector);
+      if (btn) {
+        await btn.click();
+        console.log(`[alpharadar] 已选择 7d 时间范围 (${selector})`);
+        // 等待表格刷新
+        await page.waitForTimeout(5000);
+        return true;
+      }
+    } catch {
+      // try next selector
     }
   }
+
+  // 如果精确匹配失败，用 evaluate 在 DOM 中搜索包含 "7d" 文本的可点击元素
+  try {
+    const clicked = await page.evaluate(() => {
+      const allElements = document.querySelectorAll('button, span, div, a, label');
+      for (const el of allElements) {
+        const text = (el.textContent || '').trim();
+        if (text === '7d' || text === '7D' || text === '7 days' || text === '7天') {
+          (el as HTMLElement).click();
+          return true;
+        }
+      }
+      return false;
+    });
+    if (clicked) {
+      console.log('[alpharadar] 已选择 7d 时间范围 (DOM fallback)');
+      await page.waitForTimeout(5000);
+      return true;
+    }
+  } catch {
+    // ignore
+  }
+
+  console.log('[alpharadar] 未找到 7d 时间筛选器，使用默认视图');
   return false;
 }
 
@@ -194,34 +239,29 @@ export const scrape = async (page: Page): Promise<ScrapeResult> => {
   console.log('[alpharadar] has Wallet Connection:', content.includes('Wallet Connection'));
   console.log('[alpharadar] has Connect Wallet:', content.includes('Connect Wallet'));
 
+  // ★ 核心改动：选择 7d 时间范围，避免翻页
+  await selectTimeRange(page);
+
+  // 选择 7d 后截图，便于排查
+  await page.screenshot({ path: '/tmp/alpharesearch-7d.png', fullPage: true }).catch(() => {});
+
+  // 一次性提取当前页所有项目（7d 数据量通常一页就够）
+  console.log('[*] 采集 7d 时间范围内的项目...');
+  const projects = await extractProjectsFromDom(page);
+  console.log(`[alpharadar] dom extracted ${projects.length} projects`);
+
+  // 逐个提取 Details AI 分析
   const allProjects: ProjectInfo[] = [];
-  const seen = new Set<string>();
-
-  for (let pageNum = 1; pageNum <= 50; pageNum++) {
-    console.log(`[*] 采集第 ${pageNum} 页...`);
-
-    const projects = await extractProjectsFromDom(page);
-    console.log(`[alpharadar] dom extracted ${projects.length} candidates`);
-
-    for (let i = 0; i < projects.length; i++) {
-      const project = projects[i];
-      const key = `${project.name}_${project.twitterHandle}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-
-      if (!project.description || project.description.length < 10) {
-        const aiDescription = await extractDetailDescription(page, i);
-        if (aiDescription) project.description = aiDescription;
-      }
-
-      allProjects.push(project);
+  for (let i = 0; i < projects.length; i++) {
+    const project = projects[i];
+    if (!project.description || project.description.length < 10) {
+      const aiDescription = await extractDetailDescription(page, i);
+      if (aiDescription) project.description = aiDescription;
     }
-
-    const hasNext = await navigateToNextPage(page);
-    if (!hasNext) break;
+    allProjects.push(project);
   }
 
-  console.log(`[*] 共采集 ${allProjects.length} 个项目`);
+  console.log(`[*] 共采集 ${allProjects.length} 个项目（7d）`);
   await page.close();
 
   return {
