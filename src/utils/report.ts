@@ -31,6 +31,39 @@ const NON_PROJECT_PATTERNS = [
   /guru|master|king|queen|lord|chief/i,
 ];
 
+// Bio 中包含个人身份特征的关键词（表示这是个人账号而非项目）
+const PERSONAL_BIO_PATTERNS = [
+  // 职位/头衔
+  /\b(co-?founder|founder|ceo|cto|cmo|coo|cfo|cpo)\b/i,
+  /\b(head of|director|vp of|partner at|lead at|manager)\b/i,
+  /\b(contributor|advisor|ambassador|advocate|evangelist)\b/i,
+  /\b(engineer|developer|designer|architect)\s+(at|@)/i,
+  // 个人描述
+  /\b(prev|previously|formerly|ex-|前|曾在)\b/i,
+  /\b(growing|building|working on|working at)\s+@/i,
+  /\b(co-?own|own)\s+(ai\s+)?agents?\b/i,
+  // KOL/博主/创作者
+  /认证创作者|投研|资讯分享|日常记录|博主/,
+  /\b(creator|influencer|content|blogger|vlogger)\b/i,
+  /返佣|邀请码|大使/,
+  // 营销/社区
+  /\b(marketing|community\s+build|campaign\s+lead)\b/i,
+  /\b(collector|advisor|consultant)\b/i,
+  // 矿工/早期个人
+  /\b(miner|block\s+miner|genesis\s+block)\b/i,
+];
+
+/**
+ * 通过 Bio 判断是否为个人账号
+ */
+export function isPersonalAccount(bio: string): boolean {
+  if (!bio) return false;
+  for (const pattern of PERSONAL_BIO_PATTERNS) {
+    if (pattern.test(bio)) return true;
+  }
+  return false;
+}
+
 /**
  * 判断是否为非项目账号（KOL / 交易员 / 博主 / 媒体号 / 个人大V）
  */
@@ -149,6 +182,11 @@ export async function validateProjectsWithKOL(
     const kolCount = await getKOLFollowers(project.twitterHandle);
 
     if (kolCount !== null && kolCount >= 3 && kolCount <= 100) {
+      // 二次过滤：通过 Bio 判断是否为个人账号
+      if (project.description && isPersonalAccount(project.description)) {
+        console.log(`[\u2718] ${project.name}: 个人账号（Bio 过滤），跳过`);
+        continue;
+      }
       validatedProjects.push({
         ...project,
         kolFollowers: kolCount,

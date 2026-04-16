@@ -197,7 +197,7 @@ async function selectTimeRange(page: Page): Promise<boolean> {
   // 如果精确匹配失败，用 evaluate 在 DOM 中搜索包含 "7d" 文本的可点击元素
   try {
     const clicked = await page.evaluate(() => {
-      const allElements = document.querySelectorAll('button, span, div, a, label');
+      const allElements = Array.from(document.querySelectorAll('button, span, div, a, label'));
       for (const el of allElements) {
         const text = (el.textContent || '').trim();
         if (text === '7d' || text === '7D' || text === '7 days' || text === '7天') {

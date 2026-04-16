@@ -62,7 +62,7 @@ export class ScraperCollector extends AbstractCollector {
     this.browser = browser;
 
     await page.goto(this.extension.home);
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000);
     await unlockWallet(page);
 
     log("Starting AlphaRadar data collection...");
