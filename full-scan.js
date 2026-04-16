@@ -1,10 +1,11 @@
 /**
  * AlphaResearch 完整流程：
- * 1. AlphaRadar 多页采集
+ * 1. AlphaRadar 采集（7d 时间范围，单页）
  * 2. 非项目账号过滤
  * 3. Frontrun API 验证 KOL（3 ≤ KOL ≤ 100）
  * 4. twitter-cli 获取 Bio 作为项目介绍
- * 5. 生成报告
+ * 5. Bio 二次过滤（剔除个人账号）
+ * 6. 生成报告
  */
 const { chromium } = require('playwright');
 const { join } = require('path');
@@ -119,42 +120,38 @@ function getBio(handle) {
     } catch { await page.waitForTimeout(5000); }
   }
 
-  // Step 2: 访问 AlphaRadar + 选 7d
+  // Step 2: 访问 AlphaRadar
   console.error('[*] Step 2: 访问 AlphaRadar...');
   await page.goto('https://alpharadar.io/twitter', { timeout: 60000 });
   await page.waitForTimeout(15000);
-  try { await page.click('span:has-text("7d")', { timeout: 5000 }); await page.waitForTimeout(5000); console.error('[*] 已选择 7d'); } catch { console.error('[!] 7d 选择失败'); }
 
-  // Step 3: 多页采集
-  console.error('[*] Step 3: 多页采集...');
-  let allProjects = [];
-  for (let p = 1; p <= 10; p++) {
-    console.error(`[*] 采集第 ${p} 页...`);
-    const projects = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('.ant-table-row')).map(row => {
-        let handle = '';
-        let name = '';
-        for (const link of Array.from(row.querySelectorAll('a'))) {
-          const href = link.getAttribute('href') || '';
-          const m = href.match(/(?:twitter\.com|x\.com)\/([^/?#]+)/);
-          if (m && m[1] !== 'intent') { handle = m[1]; name = link.textContent?.trim() || handle; break; }
-        }
-        if (!name) { const cells = row.querySelectorAll('td'); if (cells[0]) name = cells[0].textContent?.trim() || ''; }
-        return { name, handle };
-      }).filter(p => p.name || p.handle);
-    });
-    console.error(`[*] 第 ${p} 页: ${projects.length} 个`);
-    if (projects.length === 0) break;
-    allProjects.push(...projects);
-    try {
-      const next = await page.$('.ant-pagination-next:not(.ant-pagination-disabled)');
-      if (!next) break;
-      await next.click();
-      await page.waitForTimeout(3000);
-    } catch { break; }
+  // Step 3: 点击 7d 时间范围筛选器，等待表格刷新
+  console.error('[*] Step 3: 选择 7d 时间范围...');
+  try {
+    await page.click('span:has-text("7d")', { timeout: 5000 });
+    await page.waitForTimeout(8000); // 等待表格刷新
+    console.error('[*] 已选择 7d，表格已刷新');
+  } catch {
+    console.error('[!] 7d 选择失败，使用默认范围');
   }
+
+  // Step 4: 采集当前页面所有项目（7d 数据通常一页展示完）
+  console.error('[*] Step 4: 采集当前页面项目...');
+  const allProjects = await page.evaluate(() => {
+    return Array.from(document.querySelectorAll('.ant-table-row')).map(row => {
+      let handle = '';
+      let name = '';
+      for (const link of Array.from(row.querySelectorAll('a'))) {
+        const href = link.getAttribute('href') || '';
+        const m = href.match(/(?:twitter\.com|x\.com)\/([^/?#]+)/);
+        if (m && m[1] !== 'intent') { handle = m[1]; name = link.textContent?.trim() || handle; break; }
+      }
+      if (!name) { const cells = row.querySelectorAll('td'); if (cells[0]) name = cells[0].textContent?.trim() || ''; }
+      return { name, handle };
+    }).filter(p => p.name || p.handle);
+  });
   await browser.close();
-  console.error(`[*] 共采集 ${allProjects.length} 个原始项目`);
+  console.error(`[*] 采集到 ${allProjects.length} 个项目`);
 
   // Step 4: 去重 + 过滤
   const seen = new Set();

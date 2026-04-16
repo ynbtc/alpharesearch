@@ -247,20 +247,7 @@ export const scrape = async (page: Page): Promise<ScrapeResult> => {
 
   // 一次性提取当前页所有项目（7d 数据量通常一页就够）
   console.log('[*] 采集 7d 时间范围内的项目...');
-  const projects = await extractProjectsFromDom(page);
-  console.log(`[alpharadar] dom extracted ${projects.length} projects`);
-
-  // 逐个提取 Details AI 分析
-  const allProjects: ProjectInfo[] = [];
-  for (let i = 0; i < projects.length; i++) {
-    const project = projects[i];
-    if (!project.description || project.description.length < 10) {
-      const aiDescription = await extractDetailDescription(page, i);
-      if (aiDescription) project.description = aiDescription;
-    }
-    allProjects.push(project);
-  }
-
+  const allProjects = await extractProjectsFromDom(page);
   console.log(`[*] 共采集 ${allProjects.length} 个项目（7d）`);
   await page.close();
 
