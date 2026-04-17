@@ -36,20 +36,25 @@ const PERSONAL_BIO_PATTERNS = [
   /\b(co-?founder|founder|ceo|cto|cmo|coo|cfo|cpo)\b/i,
   /\b(head of|director|vp of|partner at|lead at|manager)\b/i,
   /\b(contributor|advisor|ambassador|advocate|evangelist)\b/i,
-  /\b(engineer|developer|designer|architect)\s+(at|@)/i,
+  /\b(engineer|developer|designer|architect)\b/i,
   // 个人描述
   /\b(prev|previously|formerly|ex-|前|曾在)\b/i,
   /\b(growing|building|working on|working at)\s+@/i,
   /\b(co-?own|own)\s+(ai\s+)?agents?\b/i,
-  // KOL/博主/创作者
+  // KOL/博主/创作者/艺术家
   /认证创作者|投研|资讯分享|日常记录|博主/,
-  /\b(creator|influencer|content|blogger|vlogger)\b/i,
+  /\b(creator|influencer|content|blogger|vlogger|artist)\b/i,
   /返佣|邀请码|大使/,
   // 营销/社区
   /\b(marketing|community\s+build|campaign\s+lead)\b/i,
   /\b(collector|advisor|consultant)\b/i,
   // 矿工/早期个人
   /\b(miner|block\s+miner|genesis\s+block)\b/i,
+  // 巨鲸/赌徒/个人玩家
+  /\b(whale|gambler|gambles|degen\b)/i,
+  /韭菜|无业游民|社区打造|项目发掘|NFT\s*玩家|币圈/,
+  // Solana/链上个人开发者
+  /\b(solana|evm|onchain)\s+(dev|developer|builder)\b/i,
 ];
 
 function isNonProject(handle, name) {
